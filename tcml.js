@@ -184,6 +184,7 @@ function execute_command(node) {
 			break;
 		case 'EXP':
 			let exp_value = eval_math_block.bind(this)(node);
+
 			if (node.attributes.hasOwnProperty('ctx')) {
 				this[node.attributes['ctx'].value] = exp_value;
 			} else if (node.attributes.hasOwnProperty('var')) {
@@ -291,6 +292,7 @@ function execute_command(node) {
 			break;
 		case 'WHILE':
 			stop = false;
+			let stopper = 0;
 			let while_context = {};
 			if (!this.hasOwnProperty('Window')) while_context = this;
 			if (node.attributes.hasOwnProperty('bool')) {
@@ -318,10 +320,12 @@ function execute_command(node) {
 				while (while_condition) {
 					while_condition = eval_condition_block.bind(while_context)(while_condition_block);
 					if (!while_condition) return;
+					if (stopper > 1000000) throw `While loop iteration was above 1000000`
 					if (stop) return;
 					for (let command of node.children[1].children) {
 						execute_command.bind(while_context)(command);
 					}
+					stopper++;
 				}
 			}
 			break;
