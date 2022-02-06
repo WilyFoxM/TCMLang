@@ -23,7 +23,7 @@
 ### For detailed examples view "examples" directory
 ### Have fun!
 
-
+# Keywords list with their attributes/
 
 | KeyWord  | attr | attr | attr     | attr     | attr    | attr   | attr   | attr | attr |
 |----------|------|------|----------|----------|---------|--------|--------|------|------|
@@ -40,4 +40,4 @@
 | switch   | var  | ctx  | -        | -        | -       | -      | -      | -    | -    |  
 | sqrt     | var  | ctx  | lit      | to       | to_ctx  | -      | -      | -    | -    |  
 | stop     | -    | -    | -        | -        | -       | -      | -      | -    | -    |  
-| false    | var  | ctx  | -        | -        | -       | -      | -      | -    | -    |  
+| false    | var  | ctx  | -        | -        | -       | -      | -      | -    | -    |
