@@ -5,6 +5,57 @@
     <title>Title</title>
 </head>
 <body>
+    <code id="code">
+        <let name="prev1">1</let>
+        <let name="prev2">0</let> tmp = prev2; prev2 = prev1; prev1 = prev1 + tmp;
+        <let name="sum">0</let>
 
+        <while var="i">
+            <cond>
+                <var name="prev1"></var>
+                <var lit="4000000"></var>
+                <eq type="<"></eq>
+            </cond>
+            <do>
+                <let ctx="tmp"></let>
+                <exp ctx="tmp">
+                    <var name="prev2"></var>
+                    <var lit="0"></var>
+                    <operand type="+"></operand>
+                </exp>
+                <exp var="prev2">
+                    <var name="prev1"></var>
+                    <var lit="0"></var>
+                    <operand type="+"></operand>
+                </exp>
+                <exp var="prev1">
+                    <var name="prev1"></var>
+                    <var ctx="tmp"></var>
+                    <operand type="+"></operand>
+                </exp>
+                <if>
+                    <cond>
+                        <exp>
+                            <var name="prev1"></var>
+                            <var lit="2"></var>
+                            <operand type="%"></operand>
+                        </exp>
+                        <var lit="0"></var>
+                        <eq type="="></eq>
+                    </cond>
+                    <do>
+                        <exp var="sum">
+                            <var name="sum"></var>
+                            <var name="prev1"></var>
+                            <operand type="+"></operand>
+                        </exp>
+                    </do>
+                </if>
+            </do>
+        </while>
+        <print var="sum"></print>
+    </code>
+
+    <script src="../tcml.js"></script>
 </body>
 </html>
