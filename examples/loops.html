@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+</head>
+<body>
+    <code id="code">
+        <print data="Iterating FOR loop"></print>
+        <for var="i" from="0" to="10">
+            <print ctx="i"></print>
+        </for>
+
+        <print data=""></print>
+
+        <print data="Iterating WHILE loop"></print>
+        <while var="i">
+            <cond>
+                <var ctx="i"></var>
+                <var lit="10"></var>
+                <eq type="<"></eq>
+            </cond>
+            <do>
+                <exp ctx="i">
+                    <var ctx="i"></var>
+                    <var lit="1"></var>
+                    <operand type="+"></operand>
+                </exp>
+                <print ctx="i"></print>
+            </do>
+        </while>
+    </code>
+
+    <script src="../tcml.js"></script>
+</body>
+</html>

@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+</head>
+<body>
+    <code id="code">
+        <function name="sum" ctx="a b">
+            <let ctx="ret"></let>
+            <exp ctx="ret">
+                <var ctx="a"></var>
+                <var ctx="b"></var>
+                <operand type="+"></operand>
+            </exp>
+            <return ctx="ret"></return>
+        </function>
+
+        <let name="ta">34</let>
+        <let name="tb">35</let>
+        <let name="res"></let>
+
+        <call name="sum" var="ta tb" ret="res"></call>
+
+        <print var="res"></print>
+    </code>
+
+    <script src="../tcml.js"></script>
+</body>
+</html>

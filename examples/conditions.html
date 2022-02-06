@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+</head>
+<body>
+    <code id="code">
+        <let name="tw">10</let>
+        <print data="IF block branching:"></print>
+        <if>
+            <cond>
+                <var name="tw"></var>
+                <var lit="10"></var>
+                <eq type="="></eq>
+            </cond>
+            <do>
+                <print data="Match!"></print>
+            </do>
+        </if>
+        <print data="SWITCH block branching:"></print>
+        <switch var="tw">
+            <case>
+                <cond>
+                    <var ctx="tw"></var>
+                    <var lit="20"></var>
+                    <eq type="="></eq>
+                </cond>
+                <do>
+                    <print data="Match!"></print>
+                </do>
+            </case>
+            <case>
+                <cond>
+                    <var ctx="tw"></var>
+                    <var lit="10"></var>
+                    <eq type="="></eq>
+                </cond>
+                <do>
+                    <print data="Match!"></print>
+                </do>
+            </case>
+        </switch>
+    </code>
+
+    <script src="../tcml.js"></script>
+</body>
+</html>
