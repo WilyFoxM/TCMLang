@@ -24,7 +24,7 @@ function eval_condition_block(node) {
 				}
 				break;
 			case 'EQ':
-				if (!operand.hasOwnProperty('type')) throw `Unspecified type of condition operation in condition evaluation block`;
+				if (!operand.attributes.hasOwnProperty('type')) throw `Unspecified type of condition operation in condition evaluation block`;
 				if (stack.length !== 2) throw `Expected 2 elements on condition evaluation stack, but got ${stack.length}`;
 
 				let a;
@@ -58,6 +58,9 @@ function eval_condition_block(node) {
 						break;
 				}
 				break;
+			case 'EXP':
+				stack.push(eval_math_block.bind(this)(operand));
+				break;
 			default:
 				throw `Unexpected token "${operand.tagName}" in condition evaluation block`;
 		}
@@ -68,16 +71,17 @@ function eval_condition_block(node) {
 function eval_concat_block(node) {
 	let result = '';
 	for (let operand of node.children) {
-		if (operand.hasOwnProperty('var')) {
+		if (operand.attributes.hasOwnProperty('var')) {
 			result += String(env_vars[operand.attributes['var'].value]);
-		} else if (operand.hasOwnProperty('ctx')) {
+		} else if (operand.attributes.hasOwnProperty('ctx')) {
 			result += String(this[operand.attributes['this'].value]);
-		} else if (operand.hasOwnProperty('lit')) {
+		} else if (operand.attributes.hasOwnProperty('lit')) {
 			result += operand.attributes['lit'].value;
 		} else {
 			throw `Not properly defined variable in concatenation evaluation block`
 		}
 	}
+	return result;
 }
 
 function eval_math_block(node) {
@@ -101,7 +105,7 @@ function eval_math_block(node) {
 				stack.push(eval_math_block(operand));
 				break;
 			case 'OPERAND':
-				if (!operand.hasOwnProperty('type')) throw `Unspecified type of math operation in math evaluation block`;
+				if (!operand.attributes.hasOwnProperty('type')) throw `Unspecified type of math operation in math evaluation block`;
 				if (stack.length !== 2) throw `Expected 2 elements on math evaluation stack, but got ${stack.length}`;
 
 				let b = parseInt(stack.pop());
@@ -234,6 +238,8 @@ function execute_command(node) {
 			break;
 		case 'IF':
 			if (node.children.length !== 2) throw `Expected 2 blocks in IF block (COND, DO) but got ${node.children.length}`;
+			if (node.children[0].tagName !== 'COND') throw `Expected token "COND" as first in IF block`;
+			if (node.children[1].tagName !== 'DO') throw `Expected token "DO" as second in IF block`;
 			let condition_block = node.children[0];
 			let condition = eval_condition_block.bind(this)(condition_block);
 
@@ -241,6 +247,152 @@ function execute_command(node) {
 				for (let command of node.children[1].children) {
 					execute_command.bind(this)(command);
 				}
+			}
+			break;
+		case 'FUNCTION':
+			if (!node.attributes.hasOwnProperty('name')) throw `Unspecified function name in main execution`;
+			env_funcs[node.attributes['name'].value] = {'func': node, 'attr': node.attributes};
+			break;
+		case 'CALL':
+			if (!node.attributes.hasOwnProperty('name')) throw `Unspecified function name in "CALL" block`;
+			let call_context = {};
+			if (!this.hasOwnProperty('Window')) call_context = this;
+			if (node.attributes.hasOwnProperty('var')) {
+				let vars = env_funcs[node.attributes['name'].value].attr['ctx'].value.split(' ');
+				let exec_vars = node.attributes['var'].value.split(' ');
+				if (vars.length !== exec_vars.length) throw `Not properly specified call variables is "CALL" block`;
+
+				for (let i = 0; i < vars.length; i++) {
+					call_context[vars[i]] = env_vars[exec_vars[i]];
+				}
+			} else if (node.attributes.hasOwnProperty('ctx_var')) {
+				let vars = env_funcs[node.attributes['name'].value].attr['ctx'].split(' ');
+				let exec_vars = node.attributes['var'].value.split(' ');
+				if (vars.length !== exec_vars.length) throw `Not properly specified call variables is "CALL" block`;
+
+				for (let i = 0; i < vars.length; i++) {
+					call_context[vars[i]] = this[exec_vars[i]];
+				}
+			}
+
+			for (let command of env_funcs[node.attributes['name'].value].func.children) {
+				execute_command.bind(call_context)(command);
+			}
+
+			if (node.attributes.hasOwnProperty('ret')) {
+				env_vars[node.attributes['ret'].value] = ret_value;
+			} else if (node.attributes.hasOwnProperty('ctx_ret')) {
+				this[node.attributes['ctx_ret'].value] = ret_value;
+			}
+			break;
+		case 'RETURN':
+			if (!node.attributes.hasOwnProperty('ctx')) throw `Expected to return context variable value in "RETURN" block`;
+			ret_value = this[node.attributes['ctx'].value];
+			break;
+		case 'WHILE':
+			stop = false;
+			let while_context = {};
+			if (!this.hasOwnProperty('Window')) while_context = this;
+			if (node.attributes.hasOwnProperty('bool')) {
+				while_context[node.attributes['bool'].value] = true;
+				let while_condition = while_context[node.attributes['bool'].value];
+				while (while_condition) {
+					while_condition = while_context[node.attributes['bool'].value];
+					if (!while_condition) return;
+					if (!stop) return;
+					for (let command of node.children) {
+						execute_command.bind(while_context)(command);
+					}
+				}
+			} else if (node.attributes.hasOwnProperty('var')) {
+				if (node.children.length !== 2) throw `Expected 2 blocks in IF block (COND, DO) but got ${node.children.length}`;
+				if (node.children[0].tagName !== 'COND') throw `Expected token "COND" as first in IF block`;
+				if (node.children[1].tagName !== 'DO') throw `Expected token "DO" as second in IF block`;
+				for (let variable of node.attributes['var'].value.split(' ')) {
+					while_context[variable] = 0;
+				}
+
+				let while_condition_block = node.children[0];
+				let while_condition = eval_condition_block.bind(while_context)(while_condition_block);
+
+				while (while_condition) {
+					while_condition = eval_condition_block.bind(while_context)(while_condition_block);
+					if (!while_condition) return;
+					if (stop) return;
+					for (let command of node.children[1].children) {
+						execute_command.bind(while_context)(command);
+					}
+				}
+			}
+			break;
+		case 'SWITCH':
+			let cmp;
+			let sw_context = {};
+			if (!this.hasOwnProperty('Window')) sw_context = this;
+			if (node.attributes.hasOwnProperty('var')) {
+				cmp = env_vars[node.attributes['var'].value];
+				sw_context[node.attributes['var'].value] = cmp;
+			} else if (node.attributes.hasOwnProperty('ctx')) {
+				cmp = this[node.attributes['ctx'].value];
+				sw_context[node.attributes['ctx'].value] = cmp;
+			} else {
+				throw `Not properly specified switch value in "SWITCH" block`;
+			}
+
+			for (let cases of node.children) {
+				switch (cases.tagName) {
+					case 'CASE':
+						if (cases.children.length !== 2) throw `Expected 2 blocks in CASE block (COND, DO) but got ${cases.children.length}`;
+						if (cases.children[0].tagName !== 'COND') throw `Expected token "COND" as first in CASE block`;
+						if (cases.children[1].tagName !== 'DO') throw `Expected token "DO" as second in CASE block`;
+						let case_cond_block = cases.children[0];
+						let case_cond = eval_condition_block.bind(sw_context)(case_cond_block);
+						if (case_cond) {
+							for (let command of cases.children[1].children) {
+								execute_command.bind(sw_context)(command);
+							}
+							return;
+						}
+						break;
+					case 'DEFAULT':
+						for (let command of cases.children[1].children) {
+							execute_command.bind(sw_context)(command);
+						}
+						return;
+					default:
+						throw `Unexpected token ${cases.tagName} in "SWITCH" block`;
+				}
+			}
+			break;
+		case 'SQRT':
+			let sqrt_val;
+			if (node.attributes.hasOwnProperty('var')) {
+				sqrt_val = Math.sqrt(env_vars[node.attributes['var'].value]);
+			} else if (node.attributes.hasOwnProperty('ctx')) {
+				sqrt_val = Math.sqrt(this[node.attributes['ctx'].value]);
+			} else if (node.attributes.hasOwnProperty('lit')) {
+				sqrt_val = Math.sqrt(node.attributes['lit'].value);
+			} else {
+				throw `Not properly specified input value for "SQRT" block`;
+			}
+			if (node.attributes.hasOwnProperty('to')) {
+				env_vars[node.attributes['to'].value] = sqrt_val;
+			} else if (node.attributes.hasOwnProperty('to_ctx')) {
+				this[node.attributes['to_ctx'].value] = sqrt_val;
+			} else {
+				throw `Not properly specified output variable for "SQRT" block`;
+			}
+			break;
+		case 'STOP':
+			stop = true;
+			break;
+		case 'FALSE':
+			if (node.attributes.hasOwnProperty('var')) {
+				env_vars[node.attributes['var'].value] = false;
+			} else if (node.attributes.hasOwnProperty('ctx')) {
+				this[node.attributes['ctx'].value] = false;
+			} else {
+				throw `Not properly specified output variable for "FALSE" block`
 			}
 			break;
 		default:
