@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+</head>
+<body>
+    <code id="code">
+        <let name="sum">0</let>
+        <for var="i" from="0" to="1000">
+            <switch ctx="b">
+                <case>
+                    <cond>
+                        <exp>
+                            <var ctx="i"></var>
+                            <var lit="3"></var>
+                            <operand type="%"></operand>
+                        </exp>
+                        <var lit="0"></var>
+                        <eq type="="></eq>
+                    </cond>
+                    <do>
+                        <exp var="sum">
+                            <var name="sum"></var>
+                            <var ctx="i"></var>
+                            <operand type="+"></operand>
+                        </exp>
+                    </do>
+                </case>
+                <case>
+                    <cond>
+                        <exp>
+                            <var ctx="i"></var>
+                            <var lit="5"></var>
+                            <operand type="%"></operand>
+                        </exp>
+                        <var lit="0"></var>
+                        <eq type="="></eq>
+                    </cond>
+                    <do>
+                        <exp var="sum">
+                            <var name="sum"></var>
+                            <var ctx="i"></var>
+                            <operand type="+"></operand>
+                        </exp>
+                    </do>
+                </case>
+            </switch>
+        </for>
+        <print var="sum"></print>
+    </code>
+
+    <script src="../tcml.js"></script>
+</body>
+</html>
